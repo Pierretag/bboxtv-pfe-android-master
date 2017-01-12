@@ -1,0 +1,56 @@
+<resources>
+
+    // APP
+
+    <string name="app_name">BboxAPI Client</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    // SPINNER
+
+    <string name="prompt_userinterface">Choose an API</string>
+
+    <string-array name="arrays_userinterface">
+        <item>Get volume</item>
+        <item>Set volume</item>
+        <item>Display toast</item>
+    </string-array>
+
+    //////////////////////////////////////////////////
+
+    <string name="prompt_media">Choose an API</string>
+
+    <string-array name="arrays_media">
+        <item>Get current program</item>
+        <item>Get TV channel list</item>
+    </string-array>
+
+    //////////////////////////////////////////////////
+
+    <string name="prompt_app">Choose an API</string>
+
+    <string-array name="arrays_app">
+        <item>Get application info</item>
+        <item>Get application list</item>
+        <item>Get application icon</item>
+        <item>Start application</item>
+        <item>Stop application</item>
+        <item>Register (for notification)</item>
+    </string-array>
+
+    //////////////////////////////////////////////////
+
+    <string name="prompt_notif">Choose an API</string>
+
+    <string-array name="arrays_notif">
+        <item>Subscribe to resources</item>
+        <item>Unsubscribe</item>
+        <item>Get opened channels</item>
+        <item>Send message to room</item>
+        <item>Send message to a specific channelId</item>
+    </string-array>
+
+</resources>

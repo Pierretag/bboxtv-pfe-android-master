@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+
+        <item android:title="API">
+
+            <menu>
+
+                <item
+                    android:id="@+id/nav_security"
+                    android:icon="@drawable/security"
+                    android:title="Security" />
+                <item
+                    android:id="@+id/nav_application"
+                    android:icon="@drawable/ic_menu_slideshow"
+                    android:title="Application" />
+                <item
+                    android:id="@+id/nav_media"
+                    android:icon="@drawable/ic_menu_gallery"
+                    android:title="Media" />
+                <item
+                    android:id="@+id/nav_userinterface"
+                    android:icon="@drawable/account_star"
+                    android:title="UserInterface" />
+                <item
+                    android:id="@+id/nav_notification"
+                    android:icon="@drawable/bell_ring"
+                    android:title="Notification" />
+
+            </menu>
+
+        </item>
+    </group>
+
+    <item android:title="Settings">
+        <menu>
+            <item
+                android:id="@+id/nav_bbox"
+                android:icon="@drawable/box"
+                android:title="Bbox" />
+        </menu>
+    </item>
+
+</menu>

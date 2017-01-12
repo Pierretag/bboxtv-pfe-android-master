@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinner_app"
+        android:layout_gravity="center_horizontal"
+        android:entries="@array/arrays_app"
+        android:prompt="@string/prompt_app" />
+
+    <FrameLayout
+        android:id="@+id/container_app_parameter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+    </FrameLayout>
+</LinearLayout>
