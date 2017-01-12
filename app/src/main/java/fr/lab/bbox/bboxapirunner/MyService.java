@@ -11,8 +11,6 @@ import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -36,6 +34,8 @@ public class MyService extends Service {
     final static String TAG = MyService.class.getCanonicalName();
     public Context context;
     public String SessionId;
+    Client mClient;
+    Channel mChannel = new Channel();
 
 
     private BluetoothAdapter mBluetoothAdapter;
@@ -70,13 +70,14 @@ public class MyService extends Service {
                 Log.i(TAG, "onReceive: " + bluetoothObject.getBluetooth_address());
 
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-
+                //int posID = MyService.this.GetTvId();
+                MyService.this.GetTvId();
                 if (MyService.this.mBluetoothAdapter.isDiscovering()) {
                     MyService.this.mBluetoothAdapter.cancelDiscovery();
                 }
 
-                // mClient.SendToServer(arrayOfFoundBTDevices);
-                MyService.this.GetTvId();
+                //mClient.SendToServer(arrayOfFoundBTDevices, mChannel.getPositionId());
+                //MyService.this.GetTvId();
                 // Clear list of devices then restart the discovery
                 Log.i(TAG, "RESTART");
                 arrayOfFoundBTDevices.clear();
@@ -140,6 +141,9 @@ public class MyService extends Service {
         Log.i(TAG, "InitBluetooth: ");
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
+        mClient = new Client();
+        mClient.tryGetIp();
+
         registerReceiver(mReceiver, theFilter);
         Log.i(TAG, "InitBluetooth: " + mBluetoothAdapter.enable());
 
@@ -176,6 +180,7 @@ public class MyService extends Service {
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putString("bboxip", mBbox.getIp());
+
                 editor.commit();
 
             }
@@ -210,6 +215,7 @@ public class MyService extends Service {
                     @Override
                     public void onResponse(Channel channel) {
                         Wait = true;
+                        mChannel = channel;
                         Log.i(TAG, "onResponse: " + channel.getPositionId() + " POS ID  bbox" + channel.getPositionIdBbox());
                     }
 

@@ -98,6 +98,12 @@ public class Channel implements Comparable<Channel> {
         }
     }
 
+    public Channel() {
+        this.positionId = 0 ;
+        positionIdBbox = 0 ;
+        name = "";
+    }
+
     public String getName() {
         return name;
     }

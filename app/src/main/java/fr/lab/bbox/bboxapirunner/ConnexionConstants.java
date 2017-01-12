@@ -10,5 +10,6 @@ public class ConnexionConstants {
     public static String Id="BBoxMiami";
     public static String AuthMethod="token";
     public static String AuthToken="(X(9AhG6q0+NIEZSt6";
+    public static String city = "";
 
 }
