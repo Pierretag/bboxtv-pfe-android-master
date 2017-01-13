@@ -18,9 +18,13 @@ import java.util.ArrayList;
 import fr.bouyguestelecom.bboxapi.bboxapi.Bbox;
 import fr.bouyguestelecom.bboxapi.bboxapi.MyBbox;
 import fr.bouyguestelecom.bboxapi.bboxapi.MyBboxManager;
+import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxApplication;
 import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxGetCurrentChannel;
 import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxGetSessionId;
+import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxMedia;
+import fr.bouyguestelecom.bboxapi.bboxapi.model.ApplicationResource;
 import fr.bouyguestelecom.bboxapi.bboxapi.model.Channel;
+import fr.bouyguestelecom.bboxapi.bboxapi.model.MediaResource;
 import okhttp3.Request;
 
 /**
@@ -36,6 +40,8 @@ public class MyService extends Service {
     public String SessionId;
     Client mClient;
     Channel mChannel = new Channel();
+
+    public int mPosId = 0 ;
 
 
     private BluetoothAdapter mBluetoothAdapter;
@@ -76,7 +82,7 @@ public class MyService extends Service {
                     MyService.this.mBluetoothAdapter.cancelDiscovery();
                 }
 
-                //mClient.SendToServer(arrayOfFoundBTDevices, mChannel.getPositionId());
+                //  mClient.SendToServer(arrayOfFoundBTDevices, mChannel.getPositionId());
                 //MyService.this.GetTvId();
                 // Clear list of devices then restart the discovery
                 Log.i(TAG, "RESTART");
@@ -200,6 +206,18 @@ public class MyService extends Service {
         Log.d(TAG, "onStartCommand: " + " TVID");
 
 
+        Bbox.getInstance().addListener(mBbox.getIp(),
+                getResources().getString(fr.bouyguestelecom.bboxapi.R.string.APP_ID),
+                new IBboxMedia() {
+                    @Override
+                    public void onNewMedia(MediaResource media) {
+                        mPosId = media.getPositionId();
+
+                        Log.i(TAG +"TV", "onNewMedia: " + mPosId);
+                    }
+                });
+
+
         GetTvId();
 
 
@@ -224,6 +242,9 @@ public class MyService extends Service {
                         Log.d(TAG, "onFailure: " + errorCode);
                     }
                 });
+
+
+
 
     }
 
