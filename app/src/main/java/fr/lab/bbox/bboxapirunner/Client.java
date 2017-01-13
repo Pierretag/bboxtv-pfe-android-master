@@ -3,6 +3,7 @@ package fr.lab.bbox.bboxapirunner;
 import android.net.wifi.WifiManager;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
+import android.text.format.DateFormat;
 import android.text.format.Formatter;
 import android.util.Log;
 
@@ -79,8 +80,6 @@ public class Client extends AppCompatActivity {
 
         });
 
-
-
     }
 
 
@@ -112,17 +111,22 @@ public class Client extends AppCompatActivity {
 
         //Timestemp
         timestamp = new Timestamp(System.currentTimeMillis());
-        message.addProperty("timestamp", timestamp.toString());
-        timestamp = new Timestamp(System.currentTimeMillis()-50000000);
+        CharSequence format = DateFormat.format("yyyy-MM-dd'T'HH:mm:ssZ", timestamp);
+
+        message.addProperty("timestamp", format.toString());
+        timestamp = new Timestamp(System.currentTimeMillis()-5400000);
+
+        format = DateFormat.format("yyyy-MM-dd'T'HH:mm:ssZ", timestamp);
 //        WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
   //      String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
   //      Log.i("******IP", ip);
-        message.addProperty("startTimestamp", timestamp.toString());
-
+        message.addProperty("startTimestamp", format.toString());
+        Log.i(TAG, "SendToServer: " + format.toString());
         //TV
         JsonObject tv = new JsonObject();
-
+        tv.addProperty("positionId",posID);
         message.add("tv", tv);
+
 
         //APP
         JsonObject app = new JsonObject();
@@ -145,12 +149,14 @@ public class Client extends AppCompatActivity {
 
         dElement.add("d", message);
 
+        Log.i(TAG, "SendToServer: " + format.toString());
 
 
 
         try {
             client = new DeviceClient(prop);
             client.connect();
+
             client.publishEvent("send", dElement); 
 
 

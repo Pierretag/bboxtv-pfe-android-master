@@ -14,17 +14,22 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import fr.bouyguestelecom.bboxapi.bboxapi.Bbox;
 import fr.bouyguestelecom.bboxapi.bboxapi.MyBbox;
 import fr.bouyguestelecom.bboxapi.bboxapi.MyBboxManager;
 import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxApplication;
+import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxGetApplications;
 import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxGetCurrentChannel;
 import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxGetSessionId;
 import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxMedia;
+import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxMessage;
+import fr.bouyguestelecom.bboxapi.bboxapi.model.Application;
 import fr.bouyguestelecom.bboxapi.bboxapi.model.ApplicationResource;
 import fr.bouyguestelecom.bboxapi.bboxapi.model.Channel;
 import fr.bouyguestelecom.bboxapi.bboxapi.model.MediaResource;
+import fr.bouyguestelecom.bboxapi.bboxapi.model.MessageResource;
 import okhttp3.Request;
 
 /**
@@ -33,6 +38,9 @@ import okhttp3.Request;
 
 public class MyService extends Service {
 
+
+    public final static boolean SEND_TO_CLIENT = true;
+
     private MyBboxManager bboxManager;
     public MyBbox mBbox;
     final static String TAG = MyService.class.getCanonicalName();
@@ -40,6 +48,7 @@ public class MyService extends Service {
     public String SessionId;
     Client mClient;
     Channel mChannel = new Channel();
+
 
     public int mPosId = 0 ;
 
@@ -77,12 +86,14 @@ public class MyService extends Service {
 
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 //int posID = MyService.this.GetTvId();
+
                 MyService.this.GetTvId();
                 if (MyService.this.mBluetoothAdapter.isDiscovering()) {
                     MyService.this.mBluetoothAdapter.cancelDiscovery();
                 }
 
-                //  mClient.SendToServer(arrayOfFoundBTDevices, mChannel.getPositionId());
+                //if(SEND_TO_CLIENT == true)  mClient.SendToServer(arrayOfFoundBTDevices, mChannel.getPositionId());
+                mClient.SendToServer(arrayOfFoundBTDevices, mChannel.getPositionId());
                 //MyService.this.GetTvId();
                 // Clear list of devices then restart the discovery
                 Log.i(TAG, "RESTART");
@@ -205,7 +216,7 @@ public class MyService extends Service {
 
         Log.d(TAG, "onStartCommand: " + " TVID");
 
-
+        /*
         Bbox.getInstance().addListener(mBbox.getIp(),
                 getResources().getString(fr.bouyguestelecom.bboxapi.R.string.APP_ID),
                 new IBboxMedia() {
@@ -217,6 +228,18 @@ public class MyService extends Service {
                     }
                 });
 
+        Bbox.getInstance().addListener(mBbox.getIp(),
+                getResources().getString(fr.bouyguestelecom.bboxapi.R.string.APP_ID),
+                new IBboxMessage() {
+                    @Override
+                    public void onNewMessage(MessageResource message) {
+                        Log.i(TAG, "DEB onNewMessage: " + message.getMessage());
+                    }
+                });
+        */
+
+
+
 
         GetTvId();
 
@@ -224,6 +247,9 @@ public class MyService extends Service {
         Log.d(TAG, "onStartCommand: " + " FINISH");
         return Service.START_NOT_STICKY;
     }
+
+
+    
 
     public void GetTvId() {
         Bbox.getInstance().getCurrentChannel(mBbox.getIp(),
