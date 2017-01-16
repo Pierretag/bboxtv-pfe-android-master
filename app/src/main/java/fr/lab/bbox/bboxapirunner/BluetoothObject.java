@@ -7,8 +7,11 @@ package fr.lab.bbox.bboxapirunner;
 import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
+import android.text.format.DateFormat;
 
 import com.google.gson.JsonObject;
+
+import java.sql.Timestamp;
 
 public class BluetoothObject implements Parcelable
 {
@@ -18,6 +21,11 @@ public class BluetoothObject implements Parcelable
     private int bluetooth_type;
     private ParcelUuid[] bluetooth_uuids;
     private int bluetooth_rssi;
+    private Timestamp start;
+
+
+    public Timestamp getStart(){return start;}
+    public void setStart(){start = new Timestamp(System.currentTimeMillis());}
 
     public String getBluetooth_name() {
         return bluetooth_name;
@@ -103,6 +111,7 @@ public class BluetoothObject implements Parcelable
         device.addProperty("MAC", bluetooth_address);
         device.addProperty("rssi",bluetooth_rssi);
         device.addProperty("name", bluetooth_name);
+        device.addProperty("startTimestamp",DateFormat.format("yyyy-MM-dd'T'HH:mm:ssZ", getStart()).toString());
 
         return device;
     }
@@ -119,5 +128,10 @@ public class BluetoothObject implements Parcelable
         out.writeString(bluetooth_name);
     }
 
-
+    @Override
+    public boolean equals(Object o) {
+        BluetoothObject b = (BluetoothObject) o;
+        if(this.bluetooth_address.toString().equals(b.bluetooth_address.toString())) return true;
+        else return false;
+    }
 }//end class BluetoothObject

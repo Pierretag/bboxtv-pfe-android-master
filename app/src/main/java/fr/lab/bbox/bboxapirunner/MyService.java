@@ -14,22 +14,14 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.ListIterator;
 
 import fr.bouyguestelecom.bboxapi.bboxapi.Bbox;
 import fr.bouyguestelecom.bboxapi.bboxapi.MyBbox;
 import fr.bouyguestelecom.bboxapi.bboxapi.MyBboxManager;
-import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxApplication;
-import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxGetApplications;
 import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxGetCurrentChannel;
 import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxGetSessionId;
-import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxMedia;
-import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxMessage;
-import fr.bouyguestelecom.bboxapi.bboxapi.model.Application;
-import fr.bouyguestelecom.bboxapi.bboxapi.model.ApplicationResource;
 import fr.bouyguestelecom.bboxapi.bboxapi.model.Channel;
-import fr.bouyguestelecom.bboxapi.bboxapi.model.MediaResource;
-import fr.bouyguestelecom.bboxapi.bboxapi.model.MessageResource;
 import okhttp3.Request;
 
 /**
@@ -48,13 +40,16 @@ public class MyService extends Service {
     public String SessionId;
     Client mClient;
     Channel mChannel = new Channel();
+    Channel mChannelMinusOne = new Channel();
+    public int posIdT, posIdTMinusOne;
+    public boolean wait = false;
 
 
-    public int mPosId = 0 ;
+    public int mPosId = 0;
 
 
     private BluetoothAdapter mBluetoothAdapter;
-    private ArrayList<BluetoothObject> arrayOfFoundBTDevices;
+    private ArrayList<BluetoothObject> btFoundT, btFoundTMinusOne;
     private boolean presence;
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -80,24 +75,45 @@ public class MyService extends Service {
                 bluetoothObject.setBluetooth_type(device.getType());    // requires API 18 or higher
                 bluetoothObject.setBluetooth_uuids(device.getUuids());
                 bluetoothObject.setBluetooth_rssi(rssi);
-
-                arrayOfFoundBTDevices = macAddrFilter(bluetoothObject, arrayOfFoundBTDevices);
+                bluetoothObject.setStart();
+                btFoundT = macAddrFilter(bluetoothObject, btFoundT);
                 Log.i(TAG, "onReceive: " + bluetoothObject.getBluetooth_address());
 
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 //int posID = MyService.this.GetTvId();
 
                 MyService.this.GetTvId();
+
+
                 if (MyService.this.mBluetoothAdapter.isDiscovering()) {
                     MyService.this.mBluetoothAdapter.cancelDiscovery();
                 }
 
-                //if(SEND_TO_CLIENT == true)  mClient.SendToServer(arrayOfFoundBTDevices, mChannel.getPositionId());
-                mClient.SendToServer(arrayOfFoundBTDevices, mChannel.getPositionId());
-                //MyService.this.GetTvId();
+                if (btFoundTMinusOne.isEmpty()) {
+                    btFoundTMinusOne = btFoundT;
+                    btFoundT = new ArrayList<BluetoothObject>();
+                } else {
+                    ArrayList<BluetoothObject> diff = tabBuffer(btFoundTMinusOne, btFoundT);
+                    if (SEND_TO_CLIENT == true && !diff.isEmpty())
+                        mClient.SendToServer(diff, posIdT);
+
+                }
+
+                while(wait == false){}
+                wait = false;
+                if (mChannel.getPositionId() != mChannelMinusOne.getPositionId()) {
+                    Log.i(TAG, "onReceive: POSIDT = " + mChannel.getPositionId() + " POSIDTMinusOne = "+mChannelMinusOne.getPositionId());
+                    mClient.SendToServer(btFoundTMinusOne, mChannelMinusOne.getPositionId());
+                    mChannelMinusOne = mChannel;
+
+
+                    btFoundTMinusOne.clear();
+                }
+
                 // Clear list of devices then restart the discovery
                 Log.i(TAG, "RESTART");
-                arrayOfFoundBTDevices.clear();
+
+                btFoundT.clear();
                 MyService.this.mBluetoothAdapter.startDiscovery();
 
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
@@ -108,7 +124,7 @@ public class MyService extends Service {
     };
 
 
-    public boolean Wait = false;
+
 
     @Nullable
 
@@ -122,6 +138,27 @@ public class MyService extends Service {
 
     }
 
+    private ArrayList<BluetoothObject> tabBuffer(ArrayList<BluetoothObject> before, ArrayList<BluetoothObject> after) {
+
+        ArrayList<BluetoothObject> diff = new ArrayList<BluetoothObject>();
+        for (BluetoothObject bt : after) {
+            if (!before.contains(bt)) {
+                before.add(bt);
+            }
+        }
+        ListIterator<BluetoothObject> btIterator = before.listIterator();
+        while (btIterator.hasNext()) {
+            BluetoothObject bt = btIterator.next();
+            if (!after.contains(bt)) {
+                diff.add(bt);
+                btIterator.remove();
+            }
+        }
+
+        return diff;
+    }
+
+
     private ArrayList<BluetoothObject> macAddrFilter(BluetoothObject bluetoothObject, ArrayList<BluetoothObject> arrayOfFoundBTDevices) {
 
         Log.i(TAG, "size = " + arrayOfFoundBTDevices.size());
@@ -132,11 +169,15 @@ public class MyService extends Service {
         }
 
         presence = true;
-        for (int i = 0; i < arrayOfFoundBTDevices.size(); i++) {
-            if (arrayOfFoundBTDevices.get(i).getBluetooth_address().contains(bluetoothObject.getBluetooth_address())) {
+
+        if (arrayOfFoundBTDevices.contains(bluetoothObject)) presence = false;
+
+        /*for (int i = 0; i < btFoundT.size(); i++) {
+            if (btFoundT.get(i).getBluetooth_address().contains(bluetoothObject.getBluetooth_address())) {
                 presence = false;
             }
-        }
+         }
+            */
         if (presence) {
             arrayOfFoundBTDevices.add(bluetoothObject);
             Log.i(TAG, bluetoothObject.getBluetooth_address() + " (" + bluetoothObject.getBluetooth_name() + ") " + " ajouté à la table");
@@ -150,8 +191,8 @@ public class MyService extends Service {
 
     public int InitBluetooth() {
 
-        arrayOfFoundBTDevices = new ArrayList<BluetoothObject>();
-
+        btFoundT = new ArrayList<BluetoothObject>();
+        btFoundTMinusOne = new ArrayList<BluetoothObject>();
         final IntentFilter theFilter = new IntentFilter();
         theFilter.addAction(BluetoothDevice.ACTION_FOUND);
         theFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
@@ -193,7 +234,7 @@ public class MyService extends Service {
                 Log.i(TAG, "onResult: OK BBox Found");
                 // We save our Bbox.
                 mBbox = myBbox;
-                Wait = true;
+                wait = true;
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putString("bboxip", mBbox.getIp());
@@ -203,9 +244,10 @@ public class MyService extends Service {
             }
         });
 
-        while (Wait == false) {
+        while (wait == false) {
         }
 
+        wait = false;
 
         InitBluetooth();
 
@@ -239,8 +281,6 @@ public class MyService extends Service {
         */
 
 
-
-
         GetTvId();
 
 
@@ -249,8 +289,6 @@ public class MyService extends Service {
     }
 
 
-    
-
     public void GetTvId() {
         Bbox.getInstance().getCurrentChannel(mBbox.getIp(),
                 getResources().getString(fr.bouyguestelecom.bboxapi.R.string.APP_ID),
@@ -258,8 +296,10 @@ public class MyService extends Service {
                 new IBboxGetCurrentChannel() {
                     @Override
                     public void onResponse(Channel channel) {
-                        Wait = true;
+                        wait = true;
                         mChannel = channel;
+                        //posIdT = channel.getPositionId();
+                        wait = true;
                         Log.i(TAG, "onResponse: " + channel.getPositionId() + " POS ID  bbox" + channel.getPositionIdBbox());
                     }
 
@@ -268,8 +308,6 @@ public class MyService extends Service {
                         Log.d(TAG, "onFailure: " + errorCode);
                     }
                 });
-
-
 
 
     }
@@ -283,7 +321,7 @@ public class MyService extends Service {
                     @Override
                     public void onResponse(String sessionId) {
                         SessionId = sessionId;
-                        Wait = true;
+                        wait = true;
                         Log.i(TAG, "onResponse: " + SessionId);
                     }
 
