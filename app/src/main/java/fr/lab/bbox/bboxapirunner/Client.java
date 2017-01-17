@@ -116,11 +116,11 @@ public class Client extends AppCompatActivity {
         message.addProperty("timestamp", format.toString());
         timestamp = new Timestamp(System.currentTimeMillis()-5400000);
 
-        format = DateFormat.format("yyyy-MM-dd'T'HH:mm:ssZ", timestamp);
+        //format = DateFormat.format("yyyy-MM-dd'T'HH:mm:ssZ", timestamp);
 //        WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
   //      String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
   //      Log.i("******IP", ip);
-        message.addProperty("startTimestamp", format.toString());
+        //message.addProperty("startTimestamp", format.toString());
         Log.i(TAG, "SendToServer: " + format.toString());
         //TV
         JsonObject tv = new JsonObject();

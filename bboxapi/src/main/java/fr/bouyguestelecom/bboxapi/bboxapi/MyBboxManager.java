@@ -126,6 +126,7 @@ public class MyBboxManager {
 
                     @Override
                     public void serviceResolved(ServiceEvent event) {
+                        System.out.println("event = " + event.getName());
                         if (event.getName().contains(SERVICE_NAME)) {
                             String bboxIP = event.getInfo().getInet4Addresses()[0].getHostAddress();
                             Log.i(TAG, "Bbox found on IP : " + bboxIP);
