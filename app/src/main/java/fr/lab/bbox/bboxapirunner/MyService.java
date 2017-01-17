@@ -33,6 +33,8 @@ public class MyService extends Service {
     private final static String TAG = MyService.class.getCanonicalName();
 
     public final static boolean SEND_TO_CLIENT = true;
+    public final static boolean DEMO = true;
+
 
     private MyBboxManager bboxManager;
     public MyBbox mBbox;
@@ -48,7 +50,7 @@ public class MyService extends Service {
     public int myPreviousPosId = 0;
     private boolean presence;
     private int smoothingConst = 0;
-    private int nbScan = 1;
+    private int nbScan = 4;
     private int RSSILimit = -75;
 
     private BluetoothAdapter mBluetoothAdapter;
@@ -164,8 +166,11 @@ public class MyService extends Service {
 
         if (arrayOfFoundBTDevices.size() == 0) {
             arrayOfFoundBTDevices.add(bluetoothObject);
-            Log.i(TAG, bluetoothObject.getBluetooth_address() + " (" + bluetoothObject.getBluetooth_name() + ") " + " ajouté à  la table");
-            Log.i(TAG, "size = " + arrayOfFoundBTDevices.size());
+            Log.i(TAG, bluetoothObject.getBluetooth_address() +
+                    " (" + bluetoothObject.getBluetooth_name() + ") "
+                    + "rssi :" + bluetoothObject.getBluetooth_rssi()
+                    + " ajouté à  la table");
+            //Log.i(TAG, "size = " + arrayOfFoundBTDevices.size());
         }
 
         presence = true;
@@ -175,8 +180,11 @@ public class MyService extends Service {
 
         if (presence) {
             arrayOfFoundBTDevices.add(bluetoothObject);
-            Log.i(TAG, bluetoothObject.getBluetooth_address() + " (" + bluetoothObject.getBluetooth_name() + ") " + " ajouté à  la table");
-            Log.i(TAG, "size = " + arrayOfFoundBTDevices.size());
+            Log.i(TAG, bluetoothObject.getBluetooth_address() +
+                    " (" + bluetoothObject.getBluetooth_name() + ") "
+                    + "rssi :" + bluetoothObject.getBluetooth_rssi()
+                    + " ajouté à  la table");
+            //Log.i(TAG, "size = " + arrayOfFoundBTDevices.size());
         } else {
             //Log.i(TAG, bluetoothObject.getBluetooth_address() + " (" + bluetoothObject.getBluetooth_name() + ") " + " existe deja dans la table");
         }
@@ -248,7 +256,7 @@ public class MyService extends Service {
                     displayArray(diff, "diff");
                     Log.i(TAG, "smoothArrayOfDevices:" + "Number of devices =  " + diff.size() + "posID " + mChannel.getPositionId());
                 }
-                if (mChannel.getPositionId() != myPreviousPosId) {
+                if (mChannel.getPositionId() != myPreviousPosId && !DEMO) {
                     Log.i(TAG, "onReceive: POSIDT = " + mChannel.getPositionId() + " POSIDTMinusOne = " + myPreviousPosId);
                     mClient.SendToServer(btFoundTMinusOne, myPreviousPosId);
                     myPreviousPosId = mChannel.getPositionId();
@@ -265,6 +273,23 @@ public class MyService extends Service {
             }
         }
 
+        // Envoie immédiat après changement de chaine
+
+        if (mChannel.getPositionId() != myPreviousPosId && DEMO) {
+            Log.i(TAG, "onReceive: POSIDT = " + mChannel.getPositionId() + " POSIDTMinusOne = " + myPreviousPosId);
+            mClient.SendToServer(btFoundTMinusOne, myPreviousPosId);
+            myPreviousPosId = mChannel.getPositionId();
+
+            btFoundTMinusOne.clear();
+
+
+            // Clear the array of devices
+            btFoundT.clear();
+
+            // Reset the constant at 0
+            smoothingConst = 0;
+        }
+
     }
 
 
@@ -275,7 +300,7 @@ public class MyService extends Service {
         }
     }
 
-    public int InitBluetooth() {
+    public int initBluetooth() {
 
         btFoundT = new ArrayList<BluetoothObject>();
         btFoundTMinusOne = new ArrayList<BluetoothObject>();
@@ -285,14 +310,14 @@ public class MyService extends Service {
         theFilter.addAction(BluetoothDevice.ACTION_FOUND);
         theFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
 
-        //Log.i(TAG, "InitBluetooth: ");
+        //Log.i(TAG, "initBluetooth: ");
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         mClient = new Client();
         mClient.tryGetIp();
 
         registerReceiver(mReceiver, theFilter);
-        Log.i(TAG, "InitBluetooth: " + mBluetoothAdapter.enable());
+        Log.i(TAG, "initBluetooth: " + mBluetoothAdapter.enable());
 
         mBluetoothAdapter.startDiscovery();
         if (!mBluetoothAdapter.isDiscovering()) {
@@ -332,21 +357,13 @@ public class MyService extends Service {
                 SetSessionId();
 
                 Log.d(TAG, "onStartCommand: " + " TVID");
-                GetTvId();
+                myPreviousPosId = GetTvId();
             }
 
 
         });
 
-        InitBluetooth();
-
-        /*
-        Log.d(TAG, "onStartCommand: " + "setsessionId");
-        SetSessionId();
-
-        Log.d(TAG, "onStartCommand: " + " TVID");
-        GetTvId();
-        */
+        initBluetooth();
 
         Log.d(TAG, "onStartCommand: " + " FINISH");
 
@@ -354,7 +371,8 @@ public class MyService extends Service {
     }
 
 
-    public void GetTvId() {
+    public int GetTvId() {
+
         Bbox.getInstance().getCurrentChannel(mBbox.getIp(),
                 getResources().getString(fr.bouyguestelecom.bboxapi.R.string.APP_ID),
                 getResources().getString(fr.bouyguestelecom.bboxapi.R.string.APP_SECRET),
@@ -364,6 +382,7 @@ public class MyService extends Service {
                         mChannel = channel;
                         //posIdT = channel.getPositionId();
                         Log.i(TAG, "onResponse: " + channel.getPositionId() + " POS ID  bbox" + channel.getPositionIdBbox());
+
                     }
 
                     @Override
@@ -371,6 +390,7 @@ public class MyService extends Service {
                         Log.d(TAG, "onFailure: " + errorCode);
                     }
                 });
+        return mChannel.getPositionId();
     }
 
 
