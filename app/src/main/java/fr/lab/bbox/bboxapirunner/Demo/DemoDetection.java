@@ -6,6 +6,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -13,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -122,6 +125,8 @@ public class DemoDetection extends Fragment {
         TextView name1 = (TextView) getView().findViewById(R.id.namePhone1);
         name1.setText(DemoConstants.nameDevice1);
 
+
+
         /*
         while (btnPressed) {
             alphaTemp = alpha3;
@@ -136,6 +141,11 @@ public class DemoDetection extends Fragment {
             }
         }
         */
+
+    }
+
+
+    public void displayPhone(){
 
     }
 

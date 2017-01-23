@@ -22,6 +22,7 @@ import fr.bouyguestelecom.bboxapi.bboxapi.MyBboxManager;
 import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxGetCurrentChannel;
 import fr.bouyguestelecom.bboxapi.bboxapi.callback.IBboxGetSessionId;
 import fr.bouyguestelecom.bboxapi.bboxapi.model.Channel;
+import fr.lab.bbox.bboxapirunner.Demo.DemoConstants;
 import okhttp3.Request;
 
 /**
@@ -50,12 +51,12 @@ public class MyService extends Service {
     public int myPreviousPosId = 0;
     private boolean presence;
     private int smoothingConst = 0;
-    private int nbScan = 4;
+    private int nbScan = 1;
     private int RSSILimit = -75;
 
     private BluetoothAdapter mBluetoothAdapter;
-    private ArrayList<BluetoothObject> btFoundT, btFoundTMinusOne, tempArray;
-
+    private ArrayList<BluetoothObject> btFoundT, tempArray;
+    public ArrayList<BluetoothObject> btFoundTMinusOne;
 
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -93,7 +94,7 @@ public class MyService extends Service {
 
                 //int posID = MyService.this.GetTvId();
 
-                //MyService.this.GetTvId();
+                if(!DEMO)MyService.this.GetTvId();
 
                 if (MyService.this.mBluetoothAdapter.isDiscovering()) {
                     MyService.this.mBluetoothAdapter.cancelDiscovery();
@@ -248,6 +249,7 @@ public class MyService extends Service {
 
             if (btFoundTMinusOne.isEmpty()) {
                 btFoundTMinusOne.addAll(btFoundT);
+
                 //btFoundT = new ArrayList<BluetoothObject>();
             } else {
                 ArrayList<BluetoothObject> diff = tabBuffer(btFoundTMinusOne, btFoundT);
@@ -304,9 +306,12 @@ public class MyService extends Service {
 
     public int initBluetooth() {
 
+
+
         btFoundT = new ArrayList<BluetoothObject>();
         btFoundTMinusOne = new ArrayList<BluetoothObject>();
         tempArray = new ArrayList<BluetoothObject>();
+        DemoConstants.actualDevices = new ArrayList<BluetoothObject>();
 
         final IntentFilter theFilter = new IntentFilter();
         theFilter.addAction(BluetoothDevice.ACTION_FOUND);
@@ -337,7 +342,8 @@ public class MyService extends Service {
 
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand: " + " start");
-
+        DemoConstants.actualDevices = new ArrayList<BluetoothObject>();
+        DemoConstants.actualDevices = btFoundTMinusOne;
         bboxManager = new MyBboxManager();
         context = this.getApplicationContext();
 
@@ -359,7 +365,7 @@ public class MyService extends Service {
                 SetSessionId();
 
                 Log.d(TAG, "onStartCommand: " + " TVID");
-                //myPreviousPosId = GetTvId();
+                if(!DEMO)myPreviousPosId = GetTvId();
             }
 
 
@@ -383,6 +389,7 @@ public class MyService extends Service {
                     public void onResponse(Channel channel) {
                         mChannel = channel;
                         //posIdT = channel.getPositionId();
+                        MainActivity.POS_STATIC = channel.getPositionId();
                         Log.i(TAG, "onResponse: " + channel.getPositionId() + " POS ID  bbox" + channel.getPositionIdBbox());
 
                     }

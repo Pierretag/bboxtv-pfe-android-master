@@ -32,19 +32,19 @@ public class MainActivity extends Activity
     public static int POS_STATIC = 1;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.content_main);
+        /*setContentView(R.layout.content_main);
 
         Fragment fragment = new DemoDetection();
         if (fragment != null) {
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.container, fragment).commit();
         }
-
+        */
         // Launch the device bluetooth detection service
         launchDetectionService();
 
         // Finish the Main Activity
-        //finish();
+        finish();
 
     }
 

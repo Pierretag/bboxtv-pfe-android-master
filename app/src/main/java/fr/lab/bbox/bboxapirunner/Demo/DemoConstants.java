@@ -1,5 +1,7 @@
 package fr.lab.bbox.bboxapirunner.Demo;
 
+import java.util.ArrayList;
+
 import fr.lab.bbox.bboxapirunner.BluetoothObject;
 
 /**
@@ -15,5 +17,8 @@ public class DemoConstants {
     // Second registered device
     public static String nameDevice2 = "IoTBgAGAE8B";
     public static String macAddress2 = "F4:B8:5E:51:69:91";
+
+
+    public static ArrayList<BluetoothObject> actualDevices;
 
 }

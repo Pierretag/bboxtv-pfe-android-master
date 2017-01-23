@@ -1,6 +1,7 @@
 package fr.lab.bbox.bboxapirunner;
 
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
@@ -101,7 +102,7 @@ public class Client extends AppCompatActivity {
 
         //BBOX
         JsonObject bbox = new JsonObject();
-        bbox.addProperty("serialNumber", "unknown");
+        bbox.addProperty("serialNumber", Build.SERIAL);
         bbox.addProperty("MAC", "unknown");
         bbox.addProperty("IP", "176.135.254.139");
         bbox.addProperty("location",ConnexionConstants.city);
@@ -156,6 +157,8 @@ public class Client extends AppCompatActivity {
         try {
             client = new DeviceClient(prop);
             client.connect();
+
+          //  System.out.println(dElement.toString());
 
             client.publishEvent("send", dElement); 
 
