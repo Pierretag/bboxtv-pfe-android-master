@@ -93,7 +93,7 @@ public class MyService extends Service {
 
                 //int posID = MyService.this.GetTvId();
 
-                MyService.this.GetTvId();
+                //MyService.this.GetTvId();
 
                 if (MyService.this.mBluetoothAdapter.isDiscovering()) {
                     MyService.this.mBluetoothAdapter.cancelDiscovery();
@@ -275,11 +275,13 @@ public class MyService extends Service {
 
         // Envoie immédiat après changement de chaine
 
-        if (mChannel.getPositionId() != myPreviousPosId && DEMO) {
-            Log.i(TAG, "onReceive: POSIDT = " + mChannel.getPositionId() + " POSIDTMinusOne = " + myPreviousPosId);
-            mClient.SendToServer(btFoundTMinusOne, myPreviousPosId);
-            myPreviousPosId = mChannel.getPositionId();
+        if (MainActivity.POS_STATIC != myPreviousPosId && DEMO) {
+            //Log.i(TAG, "onReceive: POSIDT = " + mChannel.getPositionId() + " POSIDTMinusOne = " + myPreviousPosId);
+            Log.i(TAG, "onReceive: POSIDT = " + MainActivity.POS_STATIC + " POSIDTMinusOne = " + myPreviousPosId);
 
+            mClient.SendToServer(btFoundTMinusOne, myPreviousPosId);
+            //myPreviousPosId = mChannel.getPositionId();
+            myPreviousPosId = MainActivity.POS_STATIC;
             btFoundTMinusOne.clear();
 
 
@@ -357,7 +359,7 @@ public class MyService extends Service {
                 SetSessionId();
 
                 Log.d(TAG, "onStartCommand: " + " TVID");
-                myPreviousPosId = GetTvId();
+                //myPreviousPosId = GetTvId();
             }
 
 
