@@ -34,7 +34,7 @@ public class MyService extends Service {
     private final static String TAG = MyService.class.getCanonicalName();
 
     public final static boolean SEND_TO_CLIENT = true;
-    public final static boolean DEMO = true;
+    public final static boolean DEMO = false;
 
 
     private MyBboxManager bboxManager;
@@ -365,7 +365,9 @@ public class MyService extends Service {
                 SetSessionId();
 
                 Log.d(TAG, "onStartCommand: " + " TVID");
-                if(!DEMO)myPreviousPosId = GetTvId();
+                if(!DEMO){
+                    myPreviousPosId = 166;
+                }
             }
 
 

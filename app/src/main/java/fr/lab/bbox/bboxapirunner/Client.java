@@ -103,7 +103,7 @@ public class Client extends AppCompatActivity {
         //BBOX
         JsonObject bbox = new JsonObject();
         bbox.addProperty("serialNumber", Build.SERIAL);
-        bbox.addProperty("MAC", "unknown");
+        bbox.addProperty("MAC","");
         bbox.addProperty("IP", "176.135.254.139");
         bbox.addProperty("location",ConnexionConstants.city);
         message.add("bbox", bbox);
