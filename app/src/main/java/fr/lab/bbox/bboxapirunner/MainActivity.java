@@ -30,6 +30,7 @@ public class MainActivity extends Activity
     public Intent intent;
     private boolean btnPressed = true;
     public static int POS_STATIC = 1;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         /*setContentView(R.layout.content_main);
@@ -57,6 +58,7 @@ public class MainActivity extends Activity
         intent.putExtra("Extra","Extra");
         Log.i(TAG, "START SERVICE");
         startService(intent);
+        //this.getBaseContext().bindService("MyService",)
     }
 
     /**

@@ -8,13 +8,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.Binder;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.ListIterator;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import fr.bouyguestelecom.bboxapi.bboxapi.Bbox;
 import fr.bouyguestelecom.bboxapi.bboxapi.MyBbox;
@@ -35,7 +40,7 @@ public class MyService extends Service {
 
     public final static boolean SEND_TO_CLIENT = true;
     public final static boolean DEMO = false;
-
+    Timer t;
 
     private MyBboxManager bboxManager;
     public MyBbox mBbox;
@@ -53,7 +58,7 @@ public class MyService extends Service {
     private int smoothingConst = 0;
     private int nbScan = 1;
     private int RSSILimit = -75;
-
+    public boolean isDisco = false;
     private BluetoothAdapter mBluetoothAdapter;
     private ArrayList<BluetoothObject> btFoundT, tempArray;
     public ArrayList<BluetoothObject> btFoundTMinusOne;
@@ -94,7 +99,7 @@ public class MyService extends Service {
 
                 //int posID = MyService.this.GetTvId();
 
-                if(!DEMO)MyService.this.GetTvId();
+                if(!DEMO && mBbox != null)MyService.this.GetTvId();
 
                 if (MyService.this.mBluetoothAdapter.isDiscovering()) {
                     MyService.this.mBluetoothAdapter.cancelDiscovery();
@@ -106,20 +111,38 @@ public class MyService extends Service {
                 // Clear the arrays of devices
                 tempArray.clear();
 
-                // Restart Discovery
-                MyService.this.mBluetoothAdapter.startDiscovery();
 
-            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
-                Log.i(TAG, "FINISH");
+                // Restart Discovery
+                //MyService.this.mBluetoothAdapter.startDiscovery();
+                isDisco = false;
+
+            }
             else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action))
                 Log.i(TAG, "STARTED");
         }
     };
 
+
+
+
+    public final IService.Stub binder = new IService.Stub(){
+
+
+        @Override
+        public boolean getDevice(String Number) throws RemoteException {
+            return tempArray.contains(new BluetoothObject(Number));
+        }
+    };
+
+
+
+
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        Toast.makeText(context,"MAKING CON",Toast.LENGTH_LONG);
+        return binder;
     }
 
     public void onCreate() {
@@ -311,6 +334,7 @@ public class MyService extends Service {
         btFoundT = new ArrayList<BluetoothObject>();
         btFoundTMinusOne = new ArrayList<BluetoothObject>();
         tempArray = new ArrayList<BluetoothObject>();
+        t = new Timer();
         DemoConstants.actualDevices = new ArrayList<BluetoothObject>();
 
         final IntentFilter theFilter = new IntentFilter();
@@ -326,13 +350,34 @@ public class MyService extends Service {
         registerReceiver(mReceiver, theFilter);
         Log.i(TAG, "initBluetooth: " + mBluetoothAdapter.enable());
 
-        mBluetoothAdapter.startDiscovery();
+
+
+        t.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if(isDisco == true){
+                    mBluetoothAdapter.cancelDiscovery();
+                    Log.i(TAG, "run: FORCE STOP");
+
+                }
+                else if(isDisco == false) {
+                    mBluetoothAdapter.startDiscovery();
+                    isDisco = true;
+                    Log.i(TAG, "run: FORCE RUN");
+                }
+
+
+            }
+        },0,30*1000);
+
+
+        //mBluetoothAdapter.startDiscovery();
         if (!mBluetoothAdapter.isDiscovering()) {
             mBluetoothAdapter.startDiscovery();
-            //Log.i(TAG, "DISCOVERY");
+            Log.i(TAG, "DISCOVERY");
         } else {
             mBluetoothAdapter.cancelDiscovery();
-            //Log.i(TAG, "Already");
+            Log.i(TAG, "Already");
             mBluetoothAdapter.startDiscovery();
         }
 
@@ -423,4 +468,20 @@ public class MyService extends Service {
                 });
     }
 
+
+
+
+
+
+
+
+    @Override
+    public void onDestroy(){
+        Toast.makeText(context, "DESTROY", Toast.LENGTH_LONG).show();
+        mBluetoothAdapter.cancelDiscovery();
+        unregisterReceiver(mReceiver);
+        t.cancel();
+
+
+    }
 }

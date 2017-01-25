@@ -116,6 +116,9 @@ public class BluetoothObject implements Parcelable
         return device;
     }
 
+    public BluetoothObject(String mac){
+        this.bluetooth_address = mac;
+    }
 
     @Override
     public int describeContents() {
