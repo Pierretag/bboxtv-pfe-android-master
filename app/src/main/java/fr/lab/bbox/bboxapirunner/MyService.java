@@ -59,6 +59,7 @@ public class MyService extends Service {
     private int nbScan = 1;
     private int RSSILimit = -75;
     public boolean isDisco = false;
+    public boolean isAlive = true;
     private BluetoothAdapter mBluetoothAdapter;
     private ArrayList<BluetoothObject> btFoundT, tempArray;
     public ArrayList<BluetoothObject> btFoundTMinusOne;
@@ -130,7 +131,25 @@ public class MyService extends Service {
 
         @Override
         public boolean getDevice(String Number) throws RemoteException {
-            return tempArray.contains(new BluetoothObject(Number));
+            return btFoundT.contains(new BluetoothObject(Number));
+        }
+
+        @Override
+        public int getNumberOfDevice() throws RemoteException {
+            return btFoundT.size();
+        }
+
+        @Override
+        public boolean isStillWorking() throws RemoteException {
+            /*if(btFoundTMinusOne.size() == 0 && btFoundT.size() == 0 && tempArray.size() == 0 ){
+                return false;
+            }
+            else {
+                return true;
+            }
+            */
+            return isAlive;
+
         }
     };
 
@@ -276,6 +295,11 @@ public class MyService extends Service {
                 //btFoundT = new ArrayList<BluetoothObject>();
             } else {
                 ArrayList<BluetoothObject> diff = tabBuffer(btFoundTMinusOne, btFoundT);
+
+                if(btFoundTMinusOne.size()==0 && btFoundT.size() == 0 ) isAlive = false;
+                else isAlive = true;
+
+
                 if (SEND_TO_CLIENT == true && !diff.isEmpty()) {
                     mClient.SendToServer(diff, mChannel.getPositionId());
                     displayArray(diff, "diff");
@@ -358,6 +382,7 @@ public class MyService extends Service {
                 if(isDisco == true){
                     mBluetoothAdapter.cancelDiscovery();
                     Log.i(TAG, "run: FORCE STOP");
+                    isDisco = false;
 
                 }
                 else if(isDisco == false) {
@@ -443,7 +468,7 @@ public class MyService extends Service {
 
                     @Override
                     public void onFailure(Request request, int errorCode) {
-                        Log.d(TAG, "onFailure: " + errorCode);
+                        Log.d(TAG, "onFailure: bb " + errorCode);
                     }
                 });
         return mChannel.getPositionId();
