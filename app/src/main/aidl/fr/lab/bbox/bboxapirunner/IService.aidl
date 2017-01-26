@@ -12,5 +12,5 @@ interface IService {
     boolean getDevice(String Number);
     int getNumberOfDevice();
     boolean isStillWorking();
-
+    List<String> getDevicesList();
 }

@@ -17,6 +17,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -127,27 +128,6 @@ public class MyService extends Service {
 
 
 
-    public final IService.Stub binder = new IService.Stub(){
-
-
-        @Override
-        public boolean getDevice(String Number) throws RemoteException {
-            return btFoundT.contains(new BluetoothObject(Number));
-        }
-
-        @Override
-        public int getNumberOfDevice() throws RemoteException {
-            return btFoundT.size();
-        }
-
-        @Override
-        public boolean isStillWorking() throws RemoteException {
-
-           return !btFoundT.isEmpty();
-
-
-        }
-    };
 
 
 
@@ -506,4 +486,36 @@ public class MyService extends Service {
 
 
     }
+
+
+    public final IService.Stub binder = new IService.Stub(){
+
+
+        @Override
+        public boolean getDevice(String Number) throws RemoteException {
+            return btFoundT.contains(new BluetoothObject(Number));
+        }
+
+        @Override
+        public int getNumberOfDevice() throws RemoteException {
+            return btFoundT.size();
+        }
+
+        @Override
+        public boolean isStillWorking() throws RemoteException {
+            return !btFoundT.isEmpty();
+        }
+
+        @Override
+        public List<String> getDevicesList() throws RemoteException {
+            ArrayList<String> mArrayList = new ArrayList<String>();
+            List<String> mList;
+            for (BluetoothObject b:btFoundT) {
+                mArrayList.add(b.getBluetooth_name()+"  " + b.getBluetooth_address());
+            }
+
+            mList = (List<String>) mArrayList;
+            return mList;
+        }
+    };
 }
