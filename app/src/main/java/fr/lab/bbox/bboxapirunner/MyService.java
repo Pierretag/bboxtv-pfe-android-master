@@ -39,7 +39,7 @@ public class MyService extends Service {
     private final static String TAG = MyService.class.getCanonicalName();
 
     public final static boolean SEND_TO_CLIENT = true;
-    public final static boolean DEMO = false;
+    public final static boolean DEMO = true;
     Timer t;
 
     private MyBboxManager bboxManager;
@@ -107,11 +107,12 @@ public class MyService extends Service {
                 }
 
                 // Make a condensed array with the 'nbScan' last scans of bluetooth devices
-                smoothArrayOfDevices(btFoundT, tempArray);
+               if(!DEMO) smoothArrayOfDevices(btFoundT, tempArray);
 
+                btFoundT = new ArrayList<BluetoothObject>(tempArray);
                 // Clear the arrays of devices
                 tempArray.clear();
-
+                displayArray(btFoundT,"RESULT");
 
                 // Restart Discovery
                 //MyService.this.mBluetoothAdapter.startDiscovery();
@@ -141,14 +142,9 @@ public class MyService extends Service {
 
         @Override
         public boolean isStillWorking() throws RemoteException {
-            /*if(btFoundTMinusOne.size() == 0 && btFoundT.size() == 0 && tempArray.size() == 0 ){
-                return false;
-            }
-            else {
-                return true;
-            }
-            */
-            return isAlive;
+
+           return !btFoundT.isEmpty();
+
 
         }
     };
@@ -435,7 +431,7 @@ public class MyService extends Service {
                 SetSessionId();
 
                 Log.d(TAG, "onStartCommand: " + " TVID");
-                if(!DEMO){
+                if(DEMO){
                     myPreviousPosId = 166;
                 }
             }
@@ -502,10 +498,11 @@ public class MyService extends Service {
 
     @Override
     public void onDestroy(){
-        Toast.makeText(context, "DESTROY", Toast.LENGTH_LONG).show();
+        Log.i(TAG, "onDestroy: " +" DESTROY");
         mBluetoothAdapter.cancelDiscovery();
         unregisterReceiver(mReceiver);
         t.cancel();
+        super.onDestroy();
 
 
     }
