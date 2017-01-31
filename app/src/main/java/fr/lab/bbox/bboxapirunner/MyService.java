@@ -40,7 +40,7 @@ public class MyService extends Service {
     private final static String TAG = MyService.class.getCanonicalName();
 
     public final static boolean SEND_TO_CLIENT = true;
-    public final static boolean DEMO = true;
+    public final static boolean DEMO = false;
     Timer t;
 
     private MyBboxManager bboxManager;
@@ -51,13 +51,13 @@ public class MyService extends Service {
 
     Client mClient;
     Channel mChannel = new Channel();
-    Channel mChannelMinusOne = new Channel();
+//    Channel mChannelMinusOne = new Channel();
 
     public int posIdT, posIdTMinusOne;
     public int myPreviousPosId = 0;
     private boolean presence;
     private int smoothingConst = 0;
-    private int nbScan = 1;
+    private int nbScan = 4;
     private int RSSILimit = -75;
     public boolean isDisco = false;
     public boolean isAlive = true;
@@ -65,6 +65,10 @@ public class MyService extends Service {
     private ArrayList<BluetoothObject> btFoundT, tempArray;
     public ArrayList<BluetoothObject> btFoundTMinusOne;
 
+
+    /**
+     * BroadcastReceiver that process bluetooth new devices
+     */
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -134,6 +138,7 @@ public class MyService extends Service {
 
 
     @Nullable
+
     @Override
     public IBinder onBind(Intent intent) {
         Toast.makeText(context,"MAKING CON",Toast.LENGTH_LONG);
@@ -277,14 +282,14 @@ public class MyService extends Service {
 
 
                 if (SEND_TO_CLIENT == true && !diff.isEmpty()) {
-                    mClient.SendToServer(diff, mChannel.getPositionId());
+                    mClient.SendToServer(diff, posIdT);
                     displayArray(diff, "diff");
-                    Log.i(TAG, "smoothArrayOfDevices:" + "Number of devices =  " + diff.size() + "posID " + mChannel.getPositionId());
+                    Log.i(TAG, "smoothArrayOfDevices:" + "Number of devices =  " + diff.size() + "posID " +posIdT);
                 }
-                if (mChannel.getPositionId() != myPreviousPosId && !DEMO) {
-                    Log.i(TAG, "onReceive: POSIDT = " + mChannel.getPositionId() + " POSIDTMinusOne = " + myPreviousPosId);
+                if (posIdT != myPreviousPosId && !DEMO) {
+                    Log.i(TAG, "onReceive: POSIDT = " + posIdT + " POSIDTMinusOne = " + myPreviousPosId);
                     mClient.SendToServer(btFoundTMinusOne, myPreviousPosId);
-                    myPreviousPosId = mChannel.getPositionId();
+                    myPreviousPosId = posIdT;
 
                     btFoundTMinusOne.clear();
                 }
@@ -300,13 +305,13 @@ public class MyService extends Service {
 
         // Envoie immédiat après changement de chaine
 
-        if (MainActivity.POS_STATIC != myPreviousPosId && DEMO) {
+        if (posIdT!= myPreviousPosId && DEMO) {
             //Log.i(TAG, "onReceive: POSIDT = " + mChannel.getPositionId() + " POSIDTMinusOne = " + myPreviousPosId);
-            Log.i(TAG, "onReceive: POSIDT = " + MainActivity.POS_STATIC + " POSIDTMinusOne = " + myPreviousPosId);
+            Log.i(TAG, "onReceive: POSIDT = " +posIdT + " POSIDTMinusOne = " + myPreviousPosId);
 
             mClient.SendToServer(btFoundTMinusOne, myPreviousPosId);
             //myPreviousPosId = mChannel.getPositionId();
-            myPreviousPosId = MainActivity.POS_STATIC;
+            myPreviousPosId = posIdT;
             btFoundTMinusOne.clear();
 
 
@@ -319,7 +324,11 @@ public class MyService extends Service {
 
     }
 
-
+    /**
+     * print into log the given array
+     * @param mArray
+     * @param nameArray
+     */
     public void displayArray(ArrayList<BluetoothObject> mArray, String nameArray ){
         for (int j = 0; j < mArray.size(); j++) {
             Log.i(TAG , "{ArrayList}" + nameArray + " : (" + mArray.get(j).getBluetooth_name() + ") " + mArray.get(j).getBluetooth_address()
@@ -327,10 +336,16 @@ public class MyService extends Service {
         }
     }
 
+    /**
+     * Initialization of the bluetooth device
+     * first create the implicit intent for the broadcast recevier
+     * initialize the bluetooth adapter and the web client
+     * Fetch the localisation of the bbox
+     * Register the broadcast
+     *
+     * @return
+     */
     public int initBluetooth() {
-
-
-
         btFoundT = new ArrayList<BluetoothObject>();
         btFoundTMinusOne = new ArrayList<BluetoothObject>();
         tempArray = new ArrayList<BluetoothObject>();
@@ -351,7 +366,7 @@ public class MyService extends Service {
         Log.i(TAG, "initBluetooth: " + mBluetoothAdapter.enable());
 
 
-
+        // Deamon who start and stop the discovery of the bluetooth
         t.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -385,7 +400,13 @@ public class MyService extends Service {
         return 0;
     }
 
-
+    /**
+     *
+     * @param intent
+     * @param flags
+     * @param startId
+     * @return
+     */
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand: " + " start");
         DemoConstants.actualDevices = new ArrayList<BluetoothObject>();
@@ -436,8 +457,8 @@ public class MyService extends Service {
                     @Override
                     public void onResponse(Channel channel) {
                         mChannel = channel;
-                        //posIdT = channel.getPositionId();
-                        MainActivity.POS_STATIC = channel.getPositionId();
+                        posIdT = channel.getPositionId();
+                        //MainActivity.POS_STATIC = channel.getPositionId();
                         Log.i(TAG, "onResponse: " + channel.getPositionId() + " POS ID  bbox" + channel.getPositionIdBbox());
 
                     }
@@ -487,7 +508,9 @@ public class MyService extends Service {
 
     }
 
-
+    /**
+     * Implmemen
+     */
     public final IService.Stub binder = new IService.Stub(){
 
 
