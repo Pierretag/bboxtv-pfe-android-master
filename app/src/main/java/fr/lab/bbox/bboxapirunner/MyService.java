@@ -39,8 +39,8 @@ public class MyService extends Service {
 
     private final static String TAG = MyService.class.getCanonicalName();
 
-    public final static boolean SEND_TO_CLIENT = true;
-    public final static boolean DEMO = false;
+    public final static boolean SEND_TO_CLIENT = false;
+    public final static boolean DEMO = true;
     Timer t;
 
     private MyBboxManager bboxManager;
@@ -57,7 +57,7 @@ public class MyService extends Service {
     public int myPreviousPosId = 0;
     private boolean presence;
     private int smoothingConst = 0;
-    private int nbScan = 4;
+    private int nbScan = 1;
     private int RSSILimit = -75;
     public boolean isDisco = false;
     public boolean isAlive = true;
@@ -97,13 +97,15 @@ public class MyService extends Service {
 
                 // Get all the bluetooth devices in a given field
                 tempArray = RSSIFilter(bluetoothObject, tempArray);
+                displayArray(tempArray,"tempArray");
+                Log.i(TAG, "onReceive: /////////////////////////////////////////////////////////////////////////////////");
 
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
 
                 // Clear list of devices then restart the discovery
                 Log.i(TAG, "DISCOVERY_FINISHED : RESTART");
 
-                //int posID = MyService.this.GetTvId();
+                posIdT = MyService.this.GetTvId();
 
                 if(!DEMO && mBbox != null)MyService.this.GetTvId();
 
@@ -114,7 +116,11 @@ public class MyService extends Service {
                 // Make a condensed array with the 'nbScan' last scans of bluetooth devices
                if(!DEMO) smoothArrayOfDevices(btFoundT, tempArray);
 
+
                 btFoundT = new ArrayList<BluetoothObject>(tempArray);
+
+
+
                 // Clear the arrays of devices
                 tempArray.clear();
                 displayArray(btFoundT,"RESULT");
@@ -384,7 +390,7 @@ public class MyService extends Service {
 
 
             }
-        },0,30*1000);
+        },0,15*1000);
 
 
         //mBluetoothAdapter.startDiscovery();
@@ -435,6 +441,8 @@ public class MyService extends Service {
                 if(DEMO){
                     myPreviousPosId = 166;
                 }
+
+                posIdT = GetTvId();
             }
 
 

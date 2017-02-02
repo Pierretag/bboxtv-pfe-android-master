@@ -129,13 +129,7 @@ public class MyBboxManager {
                         System.out.println("event = " + event.getName());
                         if (event.getName().contains(SERVICE_NAME)) {
                             String bboxIP = event.getInfo().getInet4Addresses()[0].getHostAddress();
-                            String bboxIP2;
-                            if(event.getInfo().getInet4Addresses().length >0){
-                                bboxIP2 = event.getInfo().getInet4Addresses()[1].getHostAddress();
-                                Log.i(TAG, "Bbox 2  found on IP : " + bboxIP2);
-                            }
                             Log.i(TAG, "Bbox found on IP : " + bboxIP);
-
                             callbackBboxFound.onResult(new MyBbox(bboxIP));
                         }
                     }
